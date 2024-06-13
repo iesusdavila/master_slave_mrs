@@ -16,7 +16,7 @@ async def main(args=None):
         args = sys.argv
 
     if len(args) != 2:
-        print("Usage: ros2 run multi_robot_move nav_master_slave.py <path_to_yaml_file>")
+        print("Usage: ros2 run multi_robot_master_slave nav_master_slave.py <path_to_yaml_file>")
         return
 
     yaml_file_path = args[1]
