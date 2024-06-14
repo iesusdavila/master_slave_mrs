@@ -12,7 +12,8 @@ class NavigateMaster(Robot):
 
     async def navigate_robot_master(self, system_master_slave):
         name_master = self.nav_master.getNameRobot()
-        list_slave_tasks = system_master_slave[name_master]["slave_tasks"]
+        dict_master = system_master_slave[name_master]
+        list_slave_tasks = dict_master["slave_tasks"]
         while list_slave_tasks:
 
             name_first_slave = list(list_slave_tasks)[0]
@@ -34,15 +35,15 @@ class NavigateMaster(Robot):
                         now = self.nav_master.get_clock().now()
                         nav_time = self.nav_master.getTimeNav(now.nanoseconds - nav_start.nanoseconds)
                         
-                        if system_master_slave[name_master]["same_time_task"]:
-                            duration_max_time_m=list_slave_tasks[name_first_slave]["duration_max_time"]
-                            duration_max_time=Duration(seconds=duration_max_time_m*60)
+                        if dict_master["same_time_task"]:
+                            duration_max_time_m = list_slave_tasks[name_first_slave]["duration_max_time"]
+                            duration_max_time = Duration(seconds=duration_max_time_m*60)
                             max_time = self.nav_master.getTimeNav(duration_max_time.nanoseconds)
                             
                             super().generate_message(name_master, feedback.current_waypoint, len(goal_poses_robot), nav_time, max_time, self.name_slave)
 
                             if now - nav_start >= duration_max_time:
-                                system_master_slave[name_master]["status"] = super().cancel_task(self.nav_master)
+                                dict_master["status"] = super().cancel_task(self.nav_master)
                                 self.nav_master.info("Tarea NO completada en el tiempo establecido.")
                                 list_slave_tasks.pop(name_first_slave)
                                 self.nav_master.info("Tarea eliminada de la lista de tareas pendientes.")
