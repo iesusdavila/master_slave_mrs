@@ -37,6 +37,11 @@ class FreeSlaveHandler(AbstractHandler):
         if found_free_slave:
             nav_free_slave = list_slaves[free_slave]["nav_class"]
             nav_free_slave.info(f'Para el esclavo {name_slave}, yo el robot {free_slave} estoy libre.')
+
+            goal_poses = request['goal_poses'][request['current_waypoint']:]
+            duration_max_time = request['duration_max_time']
+            list_slaves[free_slave]["task_queue"][name_slave] = {'goal_poses': goal_poses, 'duration_max_time': duration_max_time}
+            
             return nav_free_slave, True
         else:
             return super().handle(request)
@@ -67,6 +72,11 @@ class SlaveWithOneTaskHandler(AbstractHandler):
         if found_slave_with_one_task:
             nav_slave_with_one_task = list_slaves[slave_with_one_task]["nav_class"]
             nav_slave_with_one_task.info(f'Para el esclavo {name_slave}, yo el robot {slave_with_one_task} tengo una tarea pendiente.')
+            
+            goal_poses = request['goal_poses'][request['current_waypoint']:]
+            duration_max_time = request['duration_max_time']
+            list_slaves[slave_with_one_task]["task_queue"][name_slave] = {'goal_poses': goal_poses, 'duration_max_time': duration_max_time}
+            
             return nav_slave_with_one_task, True
         else:
             return super().handle(request)

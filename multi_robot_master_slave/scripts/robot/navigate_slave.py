@@ -100,7 +100,7 @@ class NavigateSlave(Robot):
         handler, is_free_or_one_task = free_slave_handler.handle(request)
         
         #name_slave: nombre del robot que esta pidiendo ayuda de su tarea pendiente
-        #nav_slave: robot que esta socorriendo a la ayuda de la tarea pendiente
+        #handler: robot que esta socorriendo a la ayuda de la tarea pendiente
         if is_free_or_one_task:
             slave_robot = NavigateSlave(handler, name_master, name_slave)
             await asyncio.gather(slave_robot.navigate_robot_slave(system_master_slave))
