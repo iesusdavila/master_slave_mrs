@@ -54,7 +54,7 @@ class FreeSlaveHandler(AbstractHandler):
             if len(list_slaves[name_slave_iter]["task_queue"]) == 0 and list_slaves[name_slave_iter]["status"] == True:
                 find_free_slave = True
                 slave = name_slave_iter
-                break
+                return find_free_slave, slave
         
         return find_free_slave, slave
 
@@ -87,11 +87,18 @@ class SlaveWithOneTaskHandler(AbstractHandler):
         
         for name_slave_iter in list_slaves:
             if list_slaves[name_slave_iter]["status"] == True and name_slave != name_slave_iter:
-                for task_name in list_slaves[name_slave_iter]["task_queue"]:
-                    if len(list_slaves[name_slave_iter]["task_queue"][task_name]["goal_poses"]) == 1 and name_slave != task_name:
+
+                list_task_queue = list_slaves[name_slave_iter]["task_queue"]
+                for task_name in list_task_queue:
+                    
+                    goal_poses = len(list_task_queue[task_name]["goal_poses"])
+                    slave_class = list_slaves[task_name]["nav_class"]
+                    current_pose = slave_class.getFeedback().current_waypoint
+
+                    if (goal_poses - current_pose) == 1 and name_slave != task_name:
                         find_slave_with_one_task = True
                         slave = name_slave_iter
-                        break
+                        return find_slave_with_one_task, slave
         
         return find_slave_with_one_task, slave
 
