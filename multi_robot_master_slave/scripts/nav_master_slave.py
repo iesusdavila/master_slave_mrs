@@ -8,8 +8,13 @@ from pose_utils import PoseUtils
 from data_robots import DataRobots
 import asyncio
 import sys
+import random, string
 
 system_master_slave = {}
+
+def generate_id():
+    id_task = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
+    return id_task 
 
 async def main(args=None):
     if args is None:
@@ -64,13 +69,15 @@ async def main(args=None):
                 }
             
             dict_master = system_master_slave[name_master_robot]
+            id_task = generate_id()
             dict_master["slaves"][name_robot] = {
                 "nav_class": nav_slave, 
                 "master": name_master_robot, 
                 "task_queue": 
                     {
-                        name_robot: 
+                        id_task: 
                             {
+                                'name_robot': name_robot,
                                 'duration_max_time':robot['duration_max_time'], 
                                 'goal_poses':goal_poses_robot
                             }
@@ -79,7 +86,7 @@ async def main(args=None):
             }
             
             slave_robot = NavigateSlave(nav_slave, name_master_robot, name_robot)
-            list_nav_func.append(slave_robot.navigate_robot_slave(system_master_slave))
+            list_nav_func.append(slave_robot.navigate_robot_slave(system_master_slave, id_task))
     
     await asyncio.gather(*list_nav_func)
 
