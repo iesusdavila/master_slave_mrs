@@ -2,7 +2,7 @@ robots:
   - name: tb1
     is_master: false
     name_master: tb3
-    duration_max_time: 0.5
+    duration_max_time: 0.25
     pose_goal_1:
       x: 4.0
       y: 1.0
@@ -11,7 +11,7 @@ robots:
   - name: tb2
     is_master: false
     name_master: tb3
-    duration_max_time: 0.5
+    duration_max_time: 0.4
     pose_goal_1:
       x: -6.5
       y: 2.0
