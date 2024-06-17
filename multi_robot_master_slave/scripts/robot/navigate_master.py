@@ -44,7 +44,7 @@ class NavigateMaster(Robot):
                             super().generate_message(name_master, feedback.current_waypoint, len(goal_poses_robot), nav_time, max_time, self.name_slave)
 
                             if now - nav_start >= duration_max_time:
-                                dict_master["status"] = super().cancel_task(self.nav_master)
+                                super().cancel_task(self.nav_master)
                                 self.nav_master.info("Tarea NO completada en el tiempo establecido.")
                                 list_slave_tasks.pop(id_first_slave)
                                 self.nav_master.info("Tarea eliminada de la lista de tareas pendientes.")
