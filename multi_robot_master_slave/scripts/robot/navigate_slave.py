@@ -31,9 +31,6 @@ class NavigateSlave(Robot):
             if self.name_slave_pend is None:
                 self.name_slave_pend = name_slave
 
-            self.nav_slave.info(str(task_queue.keys()))
-            self.nav_slave.info("ID de la primera tarea: " + id_first_slave_task + " - tarea del esclavo: " + id_task)
-            self.nav_slave.info("Nombre de la primera tarea: " + name_first_slave_task + " - tarea del esclavo: " + self.name_slave_pend)
             if id_first_slave_task == id_task and name_first_slave_task == self.name_slave_pend:
                 
                 goal_poses_robot = task_queue[id_task]["goal_poses"]
@@ -60,14 +57,16 @@ class NavigateSlave(Robot):
                         
                         if now - nav_start >= duration_max_time:
                             routes_remaining = len(goal_poses_robot) - (feedback.current_waypoint)
-                            dict_slave["status"] = super().cancel_task(self.nav_slave)
+                            super().cancel_task(self.nav_slave)
+
+                            old_robots_execution = task_queue[id_task]["old_robots_execution"]
                             
                             self.nav_slave.info("Tarea NO completada en el tiempo establecido.")
                             dict_slave["task_queue"].pop(id_first_slave_task)
                             self.nav_slave.info("Tarea eliminada de la lista de tareas pendientes")
 
                             if routes_remaining > 0:
-                                await self.send_goal_other_robot(id_first_slave_task, goal_poses_robot, duration_max_time_m, feedback.current_waypoint, system_master_slave)
+                                await self.send_goal_other_robot(id_first_slave_task, old_robots_execution, goal_poses_robot, duration_max_time_m, feedback.current_waypoint, system_master_slave)
                 
                 if self.nav_slave.getResult() == TaskResult.SUCCEEDED:
                     self.nav_slave.info("Tarea completada")
@@ -83,7 +82,7 @@ class NavigateSlave(Robot):
                     print("El esclavo " + self.name_slave_pend + " está esperando que la tarea enviada al esclavo " + name_first_slave_task + " sea completada una vez que dicho esclavo complete su tarea interna.")
                 await asyncio.sleep(1)
 
-    async def send_goal_other_robot(self, id_task, goal_poses_robot, duration_max_time, current_waypoint, system_master_slave):
+    async def send_goal_other_robot(self, id_task, old_robots_execution, goal_poses_robot, duration_max_time, current_waypoint, system_master_slave):
         await asyncio.sleep(1)
 
         name_slave = self.nav_slave.getNameRobot()
@@ -96,6 +95,7 @@ class NavigateSlave(Robot):
             'id_task': id_task,
             'goal_poses': goal_poses_robot,
             'duration_max_time': duration_max_time,
+            'old_robots_execution': old_robots_execution,
             'current_waypoint': current_waypoint,
         }
 
