@@ -54,7 +54,7 @@ class FreeSlaveHandler(AbstractHandler):
                 'old_robots_execution': old_robots_execution,
             }
             
-            return nav_free_slave, True
+            return nav_free_slave, True, False
         else:
             return super().handle(request)
 
@@ -102,7 +102,7 @@ class SlaveWithOneTaskHandler(AbstractHandler):
                 'old_robots_execution': old_robots_execution,
             }
             
-            return nav_slave_with_one_task, True
+            return nav_slave_with_one_task, True, False
         else:
             return super().handle(request)
 
@@ -139,22 +139,52 @@ class MasterHandler(AbstractHandler):
 
         goal_poses = request['goal_poses'][request['current_waypoint']:]
         duration_max_time = request['duration_max_time']
-
         old_robots_execution = request['old_robots_execution']
-        nav_master.info(f"Lista de robots que se encargaron de esta tarea: {str(old_robots_execution)}")
-        old_robots_execution.append(name_master)
-        nav_master.info(f"Lista de robots ACTUALIZADA que se encargaron de esta tarea: {str(old_robots_execution)}")
 
-        request['dict_master']["slave_tasks"][id_task] = {
-            'name_robot': name_slave,
-            'goal_poses': goal_poses, 
-            'duration_max_time': duration_max_time,
-            'old_robots_execution': old_robots_execution,
-        }
-        if request['dict_master']["slave_tasks"][id_task]:
+        list_slaves = request["dict_master"]["slaves"]
+        find_other_slave = None
+        for slave in list_slaves:
+            if slave not in old_robots_execution:
+                find_other_slave = slave
+
+        if name_master not in old_robots_execution:
             self.is_master_busy(nav_master.getFeedback())
             nav_master.info(f'Para el esclavo {name_slave}, yo el robot {name_master} soy el maestro para ejecutar su tarea.')
-            return nav_master, False
+
+            nav_master.info(f"Lista de robots que se encargaron de esta tarea: {str(old_robots_execution)}")
+            old_robots_execution.append(name_master)
+            nav_master.info(f"Lista de robots ACTUALIZADA que se encargaron de esta tarea: {str(old_robots_execution)}")
+
+            request['dict_master']["slave_tasks"][id_task] = {
+                'name_robot': name_slave,
+                'goal_poses': goal_poses, 
+                'duration_max_time': duration_max_time,
+                'old_robots_execution': old_robots_execution,
+            }
+
+            return nav_master, False, False
+
+        elif find_other_slave != None and name_master in old_robots_execution:
+            nav_master.info(f'El maestro {name_master} anteriormente ya ejecutó esta tarea, por lo que se pasara inmediatamente al esclavo {find_other_slave} para que la ejecute.')
+            
+            nav_slave = list_slaves[find_other_slave]["nav_class"]
+            nav_slave.info(f"Lista de robots que se encargaron de esta tarea: {str(old_robots_execution)}")
+            old_robots_execution.append(find_other_slave)
+            nav_slave.info(f"Lista de robots ACTUALIZADA que se encargaron de esta tarea: {str(old_robots_execution)}")
+
+            list_slaves[find_other_slave]["task_queue"][id_task] = {
+                'name_robot': name_slave, 
+                'goal_poses': goal_poses, 
+                'duration_max_time': duration_max_time,
+                'old_robots_execution': old_robots_execution,
+            }
+
+            return nav_slave, True, False
+
+        elif find_other_slave == None and name_master in old_robots_execution:
+            nav_master.info(f'El maestro {name_master} anteriormente ya ejecutó esta tarea y no hay otro esclavo que no haya completado la tarea. Revisarla manualmente.')
+            return nav_master, False, True
+
         else:
             return super().handle(request)
 

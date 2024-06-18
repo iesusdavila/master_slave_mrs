@@ -19,5 +19,5 @@ robots:
       yaw: 0.0
   - name: tb3
     is_master: true
-    same_time_task: false
+    same_time_task: true
     

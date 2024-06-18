@@ -66,8 +66,12 @@ class NavigateSlave(Robot):
                             self.nav_slave.info("Tarea eliminada de la lista de tareas pendientes")
 
                             if routes_remaining > 0:
-                                await self.send_goal_other_robot(id_first_slave_task, old_robots_execution, goal_poses_robot, duration_max_time_m, feedback.current_waypoint, system_master_slave)
-                
+                                status_send_goal = await self.send_goal_other_robot(id_first_slave_task, old_robots_execution, goal_poses_robot, duration_max_time_m, feedback.current_waypoint, system_master_slave)
+
+                                if not status_send_goal:
+                                    self.nav_slave.info("Terminada toda ejecucion, problemas de efectuar la tarea.")
+                                    break
+                                     
                 if self.nav_slave.getResult() == TaskResult.SUCCEEDED:
                     self.nav_slave.info("Tarea completada")
                     dict_slave["task_queue"].pop(id_first_slave_task)
@@ -105,13 +109,18 @@ class NavigateSlave(Robot):
 
         free_slave_handler.set_next(slave_with_one_task_handler).set_next(master_handler)
         
-        handler, is_free_or_one_task = free_slave_handler.handle(request)
+        handler, is_free_or_one_task, finish_task = free_slave_handler.handle(request)
         
         #name_slave: nombre del robot que esta pidiendo ayuda de su tarea pendiente
         #handler: robot que esta socorriendo a la ayuda de la tarea pendiente
-        if is_free_or_one_task:
-            slave_robot = NavigateSlave(handler, self.name_master, name_slave)
-            await asyncio.gather(slave_robot.navigate_robot_slave(system_master_slave, id_task))
+        if finish_task:
+            return False
         else:
-            master_robot = NavigateMaster(handler, name_slave)
-            await asyncio.gather(master_robot.navigate_robot_master(system_master_slave, id_task))
+            if is_free_or_one_task:
+                slave_robot = NavigateSlave(handler, self.name_master, name_slave)
+                await asyncio.gather(slave_robot.navigate_robot_slave(system_master_slave, id_task))
+                return True
+            else:
+                master_robot = NavigateMaster(handler, name_slave)
+                await asyncio.gather(master_robot.navigate_robot_master(system_master_slave, id_task))
+                return True
