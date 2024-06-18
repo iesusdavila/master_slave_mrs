@@ -72,58 +72,54 @@ class SlaveWithOneTaskHandler(AbstractHandler):
     def handle(self, request: dict) -> Optional[Any]:
         request["nav_slave"].info("---> Buscando esclavo con una tarea pendiente que pueda realizar la tarea... <---")
         
-        name_slave = request["nav_slave"].getNameRobot()
+        self.name_slave = request["nav_slave"].getNameRobot()
         
         nav_master = request["dict_master"]["nav_class"]
         name_master = nav_master.getNameRobot()
-        list_slaves = request["dict_master"]["slaves"]
+        self.list_slaves = request["dict_master"]["slaves"]
         id_task = request["id_task"]
-        old_robots_execution = request['old_robots_execution']
+        self.old_robots_execution = request['old_robots_execution']
         
-        found_slave_with_one_task, slave_with_one_task = self.find_slave_with_one_task(name_master, name_slave, old_robots_execution, list_slaves)
+        slave_with_one_task, found_slave_with_one_task = self.find_slave_with_one_task()
         if found_slave_with_one_task:
-            nav_slave_with_one_task = list_slaves[slave_with_one_task]["nav_class"]
-            nav_slave_with_one_task.info(f'Para el esclavo {name_slave}, yo el robot {slave_with_one_task} tengo una tarea pendiente.')
+            nav_slave_with_one_task = self.list_slaves[slave_with_one_task]["nav_class"]
+            nav_slave_with_one_task.info(f'Para el esclavo {self.name_slave}, yo tengo una tarea pendiente.')
             
             goal_poses = request['goal_poses'][request['current_waypoint']:]
             duration_max_time = request['duration_max_time']
 
-            nav_slave_with_one_task.info(f"Lista de robots que se encargaron de esta tarea: {str(old_robots_execution)}")
-            old_robots_execution.append(slave_with_one_task)
-            nav_slave_with_one_task.info(f"Lista de robots ACTUALIZADA que se encargaron de esta tarea: {str(old_robots_execution)}")
+            self.old_robots_execution.append(slave_with_one_task)
 
-            list_slaves[slave_with_one_task]["task_queue"][id_task] = {
-                'name_robot': name_slave, 
+            self.list_slaves[slave_with_one_task]["task_queue"][id_task] = {
+                'name_robot': self.name_slave, 
                 'goal_poses': goal_poses, 
                 'duration_max_time': duration_max_time,
-                'old_robots_execution': old_robots_execution,
+                'old_robots_execution': self.old_robots_execution,
             }
             
             return nav_slave_with_one_task, True, False
         else:
             return super().handle(request)
 
-    def find_slave_with_one_task(self, name_master, name_slave, old_robots_execution, list_slaves):
+    def find_slave_with_one_task(self) -> (str, bool):
         find_slave_with_one_task = False
         slave = None
         
-        for name_slave_iter in list_slaves:
-            if name_slave != name_slave_iter:
+        for name_slave_iter in self.list_slaves:
+            if self.name_slave != name_slave_iter:
 
-                list_task_queue = list_slaves[name_slave_iter]["task_queue"]
+                list_task_queue = self.list_slaves[name_slave_iter]["task_queue"]
                 for id_task_iter in list_task_queue:
                     
                     name_robot_task_iter = list_task_queue[id_task_iter]["name_robot"]
                     goal_poses = len(list_task_queue[id_task_iter]["goal_poses"])
-                    slave_class = list_slaves[name_robot_task_iter]["nav_class"]
+                    slave_class = self.list_slaves[name_robot_task_iter]["nav_class"]
                     current_pose = slave_class.getFeedback().current_waypoint
 
-                    if (goal_poses - current_pose) == 1 and name_slave_iter not in old_robots_execution:
-                        find_slave_with_one_task = True
-                        slave = name_slave_iter
-                        return find_slave_with_one_task, slave
+                    if (goal_poses - current_pose) == 1 and name_slave_iter not in self.old_robots_execution:
+                        return name_slave_iter, True
         
-        return find_slave_with_one_task, slave
+        return slave, find_slave_with_one_task 
 
 class MasterHandler(AbstractHandler):
     def handle(self, request: dict) -> Optional[Any]:
