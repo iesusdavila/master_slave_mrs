@@ -25,51 +25,48 @@ class AbstractHandler(Handler):
 
 class FreeSlaveHandler(AbstractHandler):
     def handle(self, request: dict) -> Optional[Any]:
-        request["nav_slave"].info("---> Buscando esclavo libre que pueda realizar la tarea... <---")
+        nav_slave = request["nav_slave"]
+        nav_slave.info("---> Buscando esclavo libre que pueda realizar la tarea... <---")
         
-        name_slave = request["nav_slave"].getNameRobot()
+        self.name_slave = nav_slave.getNameRobot()
         id_task = request['id_task']
 
         nav_master = request["dict_master"]["nav_class"]
-        name_master = nav_master.getNameRobot()
-        list_slaves = request["dict_master"]["slaves"]
-        old_robots_execution = request['old_robots_execution']
+        self.list_slaves = request["dict_master"]["slaves"]
+        self.old_robots_execution = request['old_robots_execution']
 
-        found_free_slave, free_slave = self.find_free_slave(name_master, name_slave, old_robots_execution, list_slaves)
+        free_slave, found_free_slave = self.find_free_slave()
         if found_free_slave:
-            nav_free_slave = list_slaves[free_slave]["nav_class"]
-            nav_free_slave.info(f'Para el esclavo {name_slave}, yo el robot {free_slave} estoy libre.')
+            nav_free_slave = self.list_slaves[free_slave]["nav_class"]
+            nav_free_slave.info(f'Para el esclavo {self.name_slave}, yo estoy libre.')
 
             goal_poses = request['goal_poses'][request['current_waypoint']:]
             duration_max_time = request['duration_max_time']
 
-            nav_free_slave.info(f"Lista de robots que se encargaron de esta tarea: {str(old_robots_execution)}")
-            old_robots_execution.append(free_slave)
-            nav_free_slave.info(f"Lista de robots ACTUALIZADA que se encargaron de esta tarea: {str(old_robots_execution)}")
+            self.old_robots_execution.append(free_slave)
 
-            list_slaves[free_slave]["task_queue"][id_task] = {
-                'name_robot': name_slave, 
+            self.list_slaves[free_slave]["task_queue"][id_task] = {
+                'name_robot': self.name_slave, 
                 'goal_poses': goal_poses, 
                 'duration_max_time': duration_max_time,
-                'old_robots_execution': old_robots_execution,
+                'old_robots_execution': self.old_robots_execution,
             }
             
             return nav_free_slave, True, False
         else:
+            nav_slave.info("No encontre esclavos libres...")
             return super().handle(request)
-
-    def find_free_slave(self, name_master, name_slave, old_robots_execution, list_slaves):
+    
+    def find_free_slave(self) -> (str, bool):
         find_free_slave = False
         slave = None
         
-        for name_slave_iter in list_slaves:
-            if name_slave != name_slave_iter:
-                if len(list_slaves[name_slave_iter]["task_queue"]) == 0 and name_slave_iter not in old_robots_execution:
-                    find_free_slave = True
-                    slave = name_slave_iter
-                    return find_free_slave, slave
+        for name_slave_iter in self.list_slaves:
+            if self.name_slave != name_slave_iter:
+                if len(self.list_slaves[name_slave_iter]["task_queue"]) == 0 and name_slave_iter not in self.old_robots_execution:
+                    return name_slave_iter, True
         
-        return find_free_slave, slave
+        return slave, find_free_slave
 
 class SlaveWithOneTaskHandler(AbstractHandler):
     def handle(self, request: dict) -> Optional[Any]:
