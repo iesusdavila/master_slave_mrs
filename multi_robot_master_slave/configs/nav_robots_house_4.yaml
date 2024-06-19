@@ -20,8 +20,4 @@ robots:
   - name: tb3
     is_master: true
     same_time_task: true
-  - name: tb4
-    is_master: false
-    name_master: tb3
-    duration_max_time: 2.0
     
