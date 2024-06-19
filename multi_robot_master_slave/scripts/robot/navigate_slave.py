@@ -65,12 +65,11 @@ class NavigateSlave(Robot):
                             dict_slave["task_queue"].pop(id_first_slave_task)
                             self.nav_slave.info("Tarea eliminada de la lista de tareas pendientes")
 
-                            if routes_remaining > 0:
-                                status_send_goal = await self.send_goal_other_robot(id_first_slave_task, old_robots_execution, goal_poses_robot, duration_max_time_m, feedback.current_waypoint, system_master_slave)
+                            status_send_goal = await self.send_goal_other_robot(id_first_slave_task, old_robots_execution, goal_poses_robot, duration_max_time_m, feedback.current_waypoint, system_master_slave)
 
-                                if not status_send_goal:
-                                    self.nav_slave.info("Terminada toda ejecucion, problemas de efectuar la tarea.")
-                                    break
+                            if not status_send_goal:
+                                self.nav_slave.info("Terminada toda ejecucion, problemas de efectuar la tarea.")
+                            return
                                      
                 if self.nav_slave.getResult() == TaskResult.SUCCEEDED:
                     self.nav_slave.info("Tarea completada")
