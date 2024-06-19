@@ -1,0 +1,43 @@
+robots:
+  - name: tb1
+    is_master: false
+    name_master: tb3
+    duration_max_time: 0.25
+    pose_goal_1:
+      x: 4.0
+      y: 1.0
+      z: 0.01
+      yaw: 0.0
+  - name: tb2
+    is_master: false
+    name_master: tb3
+    duration_max_time: 0.4
+    pose_goal_1:
+      x: 6.5
+      y: -4.5
+      z: 0.01
+      yaw: 0.0
+  - name: tb3
+    is_master: true
+    same_time_task: true
+  - name: tb4
+    is_master: false
+    name_master: tb6
+    duration_max_time: 0.2
+    pose_goal_1:
+      x: -1.0
+      y: 3.0
+      z: 0.01
+      yaw: 0.0
+  - name: tb5
+    is_master: false
+    name_master: tb6
+    duration_max_time: 0.3
+    pose_goal_1:
+      x: -4.0
+      y: 1.0
+      z: 0.01
+      yaw: 0.0
+  - name: tb6
+    is_master: true
+    same_time_task: false
