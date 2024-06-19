@@ -6,7 +6,6 @@ from navigation_client import TaskResult
 from robot import Robot
 from rclpy.duration import Duration
 import asyncio
-import random, string
 
 class NavigateSlave(Robot):
     def __init__(self, nav_slave, name_master, name_slave_pend=None):
@@ -14,7 +13,7 @@ class NavigateSlave(Robot):
         self.name_master = name_master
         self.name_slave_pend = name_slave_pend
         
-    async def navigate_robot_slave(self, system_master_slave, id_task):
+    async def navigate_robot_slave(self, system_master_slave: dict, id_task: str) -> None:
 
         name_slave = self.nav_slave.getNameRobot()
         dict_slave = system_master_slave[self.name_master]["slaves"][name_slave]
@@ -70,7 +69,7 @@ class NavigateSlave(Robot):
                     print("El esclavo " + self.name_slave_pend + " está esperando que la tarea enviada al esclavo " + name_first_slave_task + " sea completada una vez que dicho esclavo complete su tarea interna.")
                 await asyncio.sleep(1)
 
-    async def exceed_max_time(self, task_queue, dict_slave, id_first_slave_task, goal_poses_robot, duration_max_time_m, current_waypoint, system_master_slave):
+    async def exceed_max_time(self, task_queue: dict, dict_slave: dict, id_first_slave_task: str, goal_poses_robot: list, duration_max_time_m: str, current_waypoint: int, system_master_slave: dict) -> None:
         super().cancel_task(self.nav_slave)
 
         old_robots_execution = task_queue[id_first_slave_task]["old_robots_execution"]
@@ -84,12 +83,12 @@ class NavigateSlave(Robot):
         if not status_send_goal:
             self.nav_slave.info("Terminada toda ejecucion, problemas de efectuar la tarea.")
 
-    def task_complete(self, dict_slave, id_first_slave_task):
+    def task_complete(self, dict_slave: dict, id_first_slave_task: str) -> None:
         self.nav_slave.info("Tarea completada")
         dict_slave["task_queue"].pop(id_first_slave_task)
         self.nav_slave.info("Tarea eliminada de la lista de tareas pendientes.")
 
-    async def send_goal_other_robot(self, id_task, old_robots_execution, goal_poses_robot, duration_max_time, current_waypoint, system_master_slave):
+    async def send_goal_other_robot(self, id_task: str, old_robots_execution: list, goal_poses_robot: list, duration_max_time: str, current_waypoint: int, system_master_slave: dict) -> bool:
         await asyncio.sleep(1)
 
         name_slave = self.nav_slave.getNameRobot()

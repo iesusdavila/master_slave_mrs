@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from delegate_task import FreeSlaveHandler, SlaveWithOneTaskHandler, MasterHandler
-# from navigate_slave import NavigateSlave
 from navigation_client import TaskResult
 from robot import Robot
 from rclpy.duration import Duration
@@ -12,7 +11,7 @@ class NavigateMaster(Robot):
         self.nav_master = nav_master
         self.name_slave = name_slave
 
-    async def navigate_robot_master(self, system_master_slave, id_task):
+    async def navigate_robot_master(self, system_master_slave: dict, id_task: str) -> None:
         name_master = self.nav_master.getNameRobot()
         dict_master = system_master_slave[name_master]
         list_slave_tasks = dict_master["slave_tasks"]
@@ -38,34 +37,24 @@ class NavigateMaster(Robot):
                         now = self.nav_master.get_clock().now()
                         nav_time = self.nav_master.getTimeNav(now.nanoseconds - nav_start.nanoseconds)
                         
+                        current_waypoint = feedback.current_waypoint
+
                         if dict_master["same_time_task"]:
                             duration_max_time_m = list_slave_tasks[id_first_slave]["duration_max_time"]
                             duration_max_time = Duration(seconds=duration_max_time_m*60)
                             max_time = self.nav_master.getTimeNav(duration_max_time.nanoseconds)
                                                                              
-                            super().generate_message(name_master, feedback.current_waypoint, len(goal_poses_robot), nav_time, max_time, self.name_slave)
+                            super().generate_message(name_master, current_waypoint, len(goal_poses_robot), nav_time, max_time, self.name_slave)
 
                             if now - nav_start >= duration_max_time:
-                                super().cancel_task(self.nav_master)
-
-                                old_robots_execution = list_slave_tasks[id_first_slave]["old_robots_execution"]
-
-                                self.nav_master.info("Tarea NO completada en el tiempo establecido.")
-                                list_slave_tasks.pop(id_first_slave)
-                                self.nav_master.info("Tarea eliminada de la lista de tareas pendientes.")
-
-                                status_send_goal = await self.send_goal_other_robot(id_task, old_robots_execution, goal_poses_robot, duration_max_time_m, feedback.current_waypoint, system_master_slave)
-                        
-                                if not status_send_goal:
-                                    self.nav_master.info("Terminada toda ejecucion, problemas de efectuar la tarea.")
-                                    break
+                                await self.exceed_max_time(list_slave_tasks, id_first_slave, goal_poses_robot, duration_max_time_m, current_waypoint, system_master_slave)
+                                
+                                return 
                         else:
-                            super().generate_message(name_master, feedback.current_waypoint, len(goal_poses_robot), nav_time, name_slave=name_first_slave)
+                            super().generate_message(name_master, current_waypoint, len(goal_poses_robot), nav_time, name_slave=name_first_slave)
 
                 if self.nav_master.getResult() == TaskResult.SUCCEEDED:
-                    self.nav_master.info("Tarea completada")
-                    list_slave_tasks.pop(id_first_slave)
-                    self.nav_master.info("Tarea eliminada de la lista de tareas pendientes.")
+                    self.task_complete(list_slave_tasks, id_first_slave)
                 
                 break
             elif id_first_slave != id_task and name_first_slave == self.name_slave:
@@ -75,7 +64,26 @@ class NavigateMaster(Robot):
                 print("MSJ del maestro: " + name_master + " => El esclavo " + self.name_slave + " está en cola de espera. Ahora ejecuto la tarea del robot " + name_first_slave)
                 await asyncio.sleep(1)
 
-    async def send_goal_other_robot(self, id_task, old_robots_execution, goal_poses_robot, duration_max_time, current_waypoint, system_master_slave):
+    async def exceed_max_time(self, list_slave_tasks: dict, id_first_slave: str, goal_poses_robot: list, duration_max_time_m: str, current_waypoint: int, system_master_slave: dict) -> None:
+        super().cancel_task(self.nav_master)
+
+        old_robots_execution = list_slave_tasks[id_first_slave]["old_robots_execution"]
+
+        self.nav_master.info("Tarea NO completada en el tiempo establecido.")
+        list_slave_tasks.pop(id_first_slave)
+        self.nav_master.info("Tarea eliminada de la lista de tareas pendientes.")
+
+        status_send_goal = await self.send_goal_other_robot(id_first_slave, old_robots_execution, goal_poses_robot, duration_max_time_m, current_waypoint, system_master_slave)
+
+        if not status_send_goal:
+            self.nav_master.info("Terminada toda ejecucion, problemas de efectuar la tarea.")
+
+    def task_complete(self, list_slave_tasks: dict, id_first_slave: str) -> None:
+        self.nav_master.info("Tarea completada")
+        list_slave_tasks.pop(id_first_slave)
+        self.nav_master.info("Tarea eliminada de la lista de tareas pendientes.")
+
+    async def send_goal_other_robot(self, id_task: str, old_robots_execution: list, goal_poses_robot: list, duration_max_time: str, current_waypoint: int, system_master_slave: dict) -> bool:
         await asyncio.sleep(1)
 
         nav_master = self.nav_master
