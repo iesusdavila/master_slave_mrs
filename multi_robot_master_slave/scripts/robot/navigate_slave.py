@@ -13,10 +13,6 @@ class NavigateSlave(Robot):
         self.nav_slave = nav_slave
         self.name_master = name_master
         self.name_slave_pend = name_slave_pend
-
-    def generate_id(self):
-        id_task = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
-        return id_task
         
     async def navigate_robot_slave(self, system_master_slave, id_task):
 
@@ -63,9 +59,7 @@ class NavigateSlave(Robot):
                             return
                                      
                 if self.nav_slave.getResult() == TaskResult.SUCCEEDED:
-                    self.nav_slave.info("Tarea completada")
-                    dict_slave["task_queue"].pop(id_first_slave_task)
-                    self.nav_slave.info("Tarea eliminada de la lista de tareas pendientes.")
+                    self.task_complete(dict_slave, id_first_slave_task)
 
                 break
             elif id_first_slave_task != id_task and name_first_slave_task == self.name_slave_pend:
@@ -89,6 +83,11 @@ class NavigateSlave(Robot):
 
         if not status_send_goal:
             self.nav_slave.info("Terminada toda ejecucion, problemas de efectuar la tarea.")
+
+    def task_complete(self, dict_slave, id_first_slave_task):
+        self.nav_slave.info("Tarea completada")
+        dict_slave["task_queue"].pop(id_first_slave_task)
+        self.nav_slave.info("Tarea eliminada de la lista de tareas pendientes.")
 
     async def send_goal_other_robot(self, id_task, old_robots_execution, goal_poses_robot, duration_max_time, current_waypoint, system_master_slave):
         await asyncio.sleep(1)
