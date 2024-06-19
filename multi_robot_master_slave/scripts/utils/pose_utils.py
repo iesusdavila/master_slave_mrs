@@ -6,7 +6,7 @@ import math
 class PoseUtils:  
 
     @staticmethod
-    def quaternion_from_euler(roll, pitch, yaw):
+    def quaternion_from_euler(roll: float, pitch: float, yaw: float) -> Quaternion:
         cuaternion = Quaternion()
 
         cy = math.cos(yaw * 0.5)
@@ -30,7 +30,7 @@ class PoseUtils:
         return cuaternion
 
     @staticmethod
-    def create_pose(x, y, z, yaw=0):
+    def create_pose(x: float, y: float, z: float, yaw: float=0) -> PoseStamped:
         pose = PoseStamped()
         pose.header.frame_id = 'map'
         pose.pose.position.x = x
@@ -41,7 +41,7 @@ class PoseUtils:
         return pose
     
     @staticmethod
-    def create_poses(list_poses):
+    def create_poses(list_poses: list) -> list:
         list_poses_w_process = []
         for pose in list_poses:
             x, y, z, yaw = pose.values()
