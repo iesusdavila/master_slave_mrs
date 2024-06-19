@@ -26,7 +26,7 @@ class AbstractHandler(Handler):
 class FreeSlaveHandler(AbstractHandler):
     def handle(self, request: dict) -> Optional[Any]:
         nav_slave = request["nav_slave"]
-        nav_slave.info("---> Buscando esclavo libre que pueda realizar la tarea... <---")
+        nav_slave.info("---> Buscando esclavo libre para realizar la tarea... <---")
         
         self.name_slave = nav_slave.getNameRobot()
         id_task = request['id_task']
@@ -54,7 +54,7 @@ class FreeSlaveHandler(AbstractHandler):
             
             return nav_free_slave, True, False
         else:
-            nav_slave.info("No encontre esclavos libres...")
+            nav_slave.info("No encontre esclavos libres y que no hayan realizado esta tarea...")
             return super().handle(request)
     
     def find_free_slave(self) -> (str, bool):
@@ -70,9 +70,10 @@ class FreeSlaveHandler(AbstractHandler):
 
 class SlaveWithOneTaskHandler(AbstractHandler):
     def handle(self, request: dict) -> Optional[Any]:
-        request["nav_slave"].info("---> Buscando esclavo con una tarea pendiente que pueda realizar la tarea... <---")
+        nav_slave = request["nav_slave"]
+        nav_slave.info("---> Buscando esclavo con una tarea pendiente para realizar la tarea... <---")
         
-        self.name_slave = request["nav_slave"].getNameRobot()
+        self.name_slave = nav_slave.getNameRobot()
         
         nav_master = request["dict_master"]["nav_class"]
         name_master = nav_master.getNameRobot()
@@ -99,6 +100,7 @@ class SlaveWithOneTaskHandler(AbstractHandler):
             
             return nav_slave_with_one_task, True, False
         else:
+            nav_slave.info("No encontre esclavos con una tarea pendiente y que no hayan realizado esta tarea...")
             return super().handle(request)
 
     def find_slave_with_one_task(self) -> (str, bool):
