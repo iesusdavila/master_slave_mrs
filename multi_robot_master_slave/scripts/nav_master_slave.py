@@ -42,6 +42,7 @@ async def main(args=None):
 
             system_master_slave[name_robot] = {
                 "nav_class": nav_master, 
+                "has_camera": robot['has_camera'],
                 "same_time_task": robot['same_time_task'], 
                 "slaves": {}, 
                 "slave_tasks": {}, 
@@ -58,10 +59,12 @@ async def main(args=None):
 
             if not(name_master_robot in system_master_slave):
                 nav_master = NavigationRobot(namespace=name_master_robot)
+                has_camera_master = data_nav_robots.get_has_camera(configs_robots, name_master_robot)
                 same_time_task_master = data_nav_robots.get_time_task_master(configs_robots, name_master_robot)
 
                 system_master_slave[name_master_robot] = {
                     "nav_class": nav_master, 
+                    "has_camera": has_camera_master,
                     "same_time_task": same_time_task_master, 
                     "slaves": {}, 
                     "slave_tasks": {}, 
@@ -73,6 +76,7 @@ async def main(args=None):
             dict_master["slaves"][name_robot] = {
                 "nav_class": nav_slave, 
                 "master": name_master_robot, 
+                "has_camera": robot['has_camera'],
                 "task_queue": 
                     {
                         id_task: 
@@ -80,6 +84,7 @@ async def main(args=None):
                                 'name_robot': name_robot,
                                 'has_max_time': robot['has_max_time'],
                                 'duration_max_time': robot['duration_max_time'], 
+                                'use_camera': robot['use_camera'],
                                 'goal_poses': goal_poses_robot,
                                 'old_robots_execution': [name_robot],
                             }

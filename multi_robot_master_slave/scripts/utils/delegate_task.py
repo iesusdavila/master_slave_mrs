@@ -34,6 +34,7 @@ class FreeSlaveHandler(AbstractHandler):
         nav_master = request["dict_master"]["nav_class"]
         self.list_slaves = request["dict_master"]["slaves"]
         self.old_robots_execution = request['old_robots_execution']
+        self.use_camera = request['use_camera']
 
         free_slave, found_free_slave = self.find_free_slave()
         if found_free_slave:
@@ -48,6 +49,7 @@ class FreeSlaveHandler(AbstractHandler):
 
             self.list_slaves[free_slave]["task_queue"][id_task] = {
                 'name_robot': self.name_slave, 
+                'use_camera': self.use_camera,
                 'goal_poses': goal_poses,
                 'has_max_time': has_max_time,
                 'duration_max_time': duration_max_time,
@@ -66,7 +68,13 @@ class FreeSlaveHandler(AbstractHandler):
         for name_slave_iter in self.list_slaves:
             if self.name_slave != name_slave_iter:
                 if len(self.list_slaves[name_slave_iter]["task_queue"]) == 0 and name_slave_iter not in self.old_robots_execution:
-                    return name_slave_iter, True
+                    if self.use_camera:
+                        if self.list_slaves[name_slave_iter]["has_camera"]:
+                            return name_slave_iter, True
+                        else:
+                            print("La tarea requiere de la cámara y el esclavo no la tiene.")
+                    else:
+                        return name_slave_iter, True
         
         return slave, find_free_slave
 
@@ -82,6 +90,7 @@ class SlaveWithOneTaskHandler(AbstractHandler):
         self.list_slaves = request["dict_master"]["slaves"]
         id_task = request["id_task"]
         self.old_robots_execution = request['old_robots_execution']
+        self.use_camera = request['use_camera']
         
         slave_with_one_task, found_slave_with_one_task = self.find_slave_with_one_task()
         if found_slave_with_one_task:
@@ -96,6 +105,7 @@ class SlaveWithOneTaskHandler(AbstractHandler):
 
             self.list_slaves[slave_with_one_task]["task_queue"][id_task] = {
                 'name_robot': self.name_slave, 
+                'use_camera': self.use_camera,
                 'goal_poses': goal_poses,
                 'has_max_time': has_max_time,
                 'duration_max_time': duration_max_time,
@@ -123,7 +133,13 @@ class SlaveWithOneTaskHandler(AbstractHandler):
                     current_pose = slave_class.getFeedback().current_waypoint
 
                     if (goal_poses - current_pose) == 1 and name_slave_iter not in self.old_robots_execution:
-                        return name_slave_iter, True
+                        if self.use_camera:
+                            if self.list_slaves[name_slave_iter]["has_camera"]:
+                                return name_slave_iter, True
+                            else:
+                                print("La tarea requiere de la cámara y el esclavo no la tiene.")
+                        else:
+                            return name_slave_iter, True
         
         return slave, find_slave_with_one_task 
 
@@ -135,23 +151,47 @@ class MasterHandler(AbstractHandler):
 
         self.nav_master = request["dict_master"]["nav_class"]
         self.name_master = self.nav_master.getNameRobot()
+        self.has_camera_master = request["dict_master"]["has_camera"]
 
         self.goal_poses = request['goal_poses'][request['current_waypoint']:]
         self.has_max_time = request['has_max_time']
         self.duration_max_time = request['duration_max_time']
         self.old_robots_execution = request['old_robots_execution']
+        self.use_camera = request['use_camera']
 
         list_slaves = request["dict_master"]["slaves"]
         self.find_other_slave = None
+
+        self.nav_master.info("---> Verificando si el master está disponible u otro esclavo... <---")
         for slave in list_slaves:
+            print
             if slave not in self.old_robots_execution:
-                self.find_other_slave = slave
+                if self.use_camera:
+                    if list_slaves[slave]["has_camera"]:
+                        self.find_other_slave = slave
+                    else:
+                        self.nav_master.info("Existe un esclavo disponible, pero la tarea es con cámara y el esclavo no la tiene.")
+                else:
+                    self.find_other_slave = slave
 
-        self.nav_master.info("---> Verificando si el master está disponible... <---")
+        task_use_camera_and_master_hasn_camera = False
         if self.name_master not in self.old_robots_execution:
-            request['dict_master']["slave_tasks"][id_task] = self.master_not_executed()
+            if self.use_camera:
+                if self.has_camera_master:
+                    request['dict_master']["slave_tasks"][id_task] = self.master_not_executed()
+                    return self.nav_master, False, False
+                else:
+                    self.nav_master.info("La tarea requiere de la cámara y el master no la tiene.")
+                    task_use_camera_and_master_hasn_camera = True
+            else:
+                request['dict_master']["slave_tasks"][id_task] = self.master_not_executed()
+                return self.nav_master, False, False
 
-            return self.nav_master, False, False
+        if self.find_other_slave != None and task_use_camera_and_master_hasn_camera:
+            nav_slave = list_slaves[self.find_other_slave]["nav_class"]
+            list_slaves[self.find_other_slave]["task_queue"][id_task] = self.master_exect_slave_not_executed()
+
+            return nav_slave, True, False
 
         elif self.find_other_slave != None and self.name_master in self.old_robots_execution:
             nav_slave = list_slaves[self.find_other_slave]["nav_class"]
@@ -161,6 +201,11 @@ class MasterHandler(AbstractHandler):
 
         elif self.find_other_slave == None and self.name_master in self.old_robots_execution:
             self.master_and_slave_exect()
+
+            return self.nav_master, False, True
+
+        elif self.find_other_slave == None and task_use_camera_and_master_hasn_camera:
+            self.mast_hasn_cam_slave_not_executed()
 
             return self.nav_master, False, True
 
@@ -180,6 +225,7 @@ class MasterHandler(AbstractHandler):
 
         task_queue = {
             'name_robot': self.name_slave,
+            'use_camera': self.use_camera,
             'goal_poses': self.goal_poses, 
             'has_max_time': self.has_max_time, 
             'duration_max_time': self.duration_max_time,
@@ -195,6 +241,7 @@ class MasterHandler(AbstractHandler):
 
         task_queue = {
             'name_robot': self.name_slave, 
+            'use_camera': self.use_camera,
             'goal_poses': self.goal_poses, 
             'has_max_time': self.has_max_time,
             'duration_max_time': self.duration_max_time,
@@ -207,3 +254,8 @@ class MasterHandler(AbstractHandler):
         
         self.nav_master.info(f'El maestro {self.name_master} y todos los esclavos anteriormente ya ejecutaron esta intentaron cumplir esta tarea.')
         self.nav_master.info("Revisarla manualmente.")
+
+    def mast_hasn_cam_slave_not_executed(self) -> None:
+
+        self.nav_master.info("No hay esclavos disponibles para realizar la tarea con cámara.")
+        self.nav_master.info("El master no tiene la cámara y la tarea la requiere.")

@@ -17,11 +17,14 @@ class DataRobots:
     def get_name(self, robot):
         return robot['name']
     
+    def get_has_camera(self, configs_robots, name_master_robot):
+        return next((robot for robot in configs_robots if robot['name'] == name_master_robot), None)['has_camera']
+
     def get_time_task_master(self, configs_robots, name_master_robot):
         return next((robot for robot in configs_robots if robot['name'] == name_master_robot), None)['same_time_task']
 
     def get_number_poses(self, robot):
-        return len(robot) - 5
+        return len(robot) - 7
 
     def get_pose(self, robot, index):
         param_goal_pose = "pose_goal_" + str(index+1)
