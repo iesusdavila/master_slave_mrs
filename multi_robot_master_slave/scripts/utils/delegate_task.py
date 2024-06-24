@@ -41,13 +41,15 @@ class FreeSlaveHandler(AbstractHandler):
             nav_free_slave.info(f'Para el esclavo {self.name_slave}, yo estoy libre.')
 
             goal_poses = request['goal_poses'][request['current_waypoint']:]
+            has_max_time = request['has_max_time']
             duration_max_time = request['duration_max_time']
 
             self.old_robots_execution.append(free_slave)
 
             self.list_slaves[free_slave]["task_queue"][id_task] = {
                 'name_robot': self.name_slave, 
-                'goal_poses': goal_poses, 
+                'goal_poses': goal_poses,
+                'has_max_time': has_max_time,
                 'duration_max_time': duration_max_time,
                 'old_robots_execution': self.old_robots_execution,
             }
@@ -87,13 +89,15 @@ class SlaveWithOneTaskHandler(AbstractHandler):
             nav_slave_with_one_task.info(f'Para el esclavo {self.name_slave}, yo tengo una tarea pendiente.')
             
             goal_poses = request['goal_poses'][request['current_waypoint']:]
+            has_max_time = request['has_max_time']
             duration_max_time = request['duration_max_time']
 
             self.old_robots_execution.append(slave_with_one_task)
 
             self.list_slaves[slave_with_one_task]["task_queue"][id_task] = {
                 'name_robot': self.name_slave, 
-                'goal_poses': goal_poses, 
+                'goal_poses': goal_poses,
+                'has_max_time': has_max_time,
                 'duration_max_time': duration_max_time,
                 'old_robots_execution': self.old_robots_execution,
             }
@@ -133,6 +137,7 @@ class MasterHandler(AbstractHandler):
         self.name_master = self.nav_master.getNameRobot()
 
         self.goal_poses = request['goal_poses'][request['current_waypoint']:]
+        self.has_max_time = request['has_max_time']
         self.duration_max_time = request['duration_max_time']
         self.old_robots_execution = request['old_robots_execution']
 
@@ -176,6 +181,7 @@ class MasterHandler(AbstractHandler):
         task_queue = {
             'name_robot': self.name_slave,
             'goal_poses': self.goal_poses, 
+            'has_max_time': self.has_max_time, 
             'duration_max_time': self.duration_max_time,
             'old_robots_execution': self.old_robots_execution,
         }
@@ -190,6 +196,7 @@ class MasterHandler(AbstractHandler):
         task_queue = {
             'name_robot': self.name_slave, 
             'goal_poses': self.goal_poses, 
+            'has_max_time': self.has_max_time,
             'duration_max_time': self.duration_max_time,
             'old_robots_execution': self.old_robots_execution,
         }

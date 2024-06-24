@@ -21,7 +21,7 @@ class DataRobots:
         return next((robot for robot in configs_robots if robot['name'] == name_master_robot), None)['same_time_task']
 
     def get_number_poses(self, robot):
-        return len(robot) - 4
+        return len(robot) - 5
 
     def get_pose(self, robot, index):
         param_goal_pose = "pose_goal_" + str(index+1)

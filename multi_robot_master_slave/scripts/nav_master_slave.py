@@ -78,6 +78,7 @@ async def main(args=None):
                         id_task: 
                             {
                                 'name_robot': name_robot,
+                                'has_max_time': robot['has_max_time'],
                                 'duration_max_time': robot['duration_max_time'], 
                                 'goal_poses': goal_poses_robot,
                                 'old_robots_execution': [name_robot],
