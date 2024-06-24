@@ -2,8 +2,10 @@ robots:
   - name: tb1
     is_master: false
     name_master: tb3
+    has_camera: true
     has_max_time: true
     duration_max_time: 0.25
+    use_camera: false
     pose_goal_1:
       x: 4.0
       y: 1.0
@@ -12,8 +14,10 @@ robots:
   - name: tb2
     is_master: false
     name_master: tb3
+    has_camera: true
     has_max_time: true
     duration_max_time: 0.4
+    use_camera: false
     pose_goal_1:
       x: 6.5
       y: -4.5
@@ -21,12 +25,15 @@ robots:
       yaw: 0.0
   - name: tb3
     is_master: true
+    has_camera: true
     same_time_task: true
   - name: tb4
     is_master: false
     name_master: tb6
+    has_camera: true
     has_max_time: true
     duration_max_time: 0.2
+    use_camera: false
     pose_goal_1:
       x: -1.0
       y: 3.0
@@ -35,8 +42,10 @@ robots:
   - name: tb5
     is_master: false
     name_master: tb6
+    has_camera: true
     has_max_time: true
     duration_max_time: 0.3
+    use_camera: false
     pose_goal_1:
       x: -4.0
       y: 1.0
@@ -44,4 +53,5 @@ robots:
       yaw: 0.0
   - name: tb6
     is_master: true
+    has_camera: true
     same_time_task: false

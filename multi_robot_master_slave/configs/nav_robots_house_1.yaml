@@ -2,8 +2,10 @@ robots:
   - name: rover1
     is_master: false
     name_master: limo1
+    has_camera: true
     has_max_time: true
     duration_max_time: 0.15
+    use_camera: false
     pose_goal_1:
       x: -2.0
       y: 4.5
@@ -11,12 +13,15 @@ robots:
       yaw: 1.5708
   - name: limo1
     is_master: true
+    has_camera: true
     same_time_task: false
   - name: tb3
     is_master: false
     name_master: limo1
+    has_camera: true
     has_max_time: true
     duration_max_time: 5.0
+    use_camera: false
     pose_goal_1:
       x: -6.5
       y: 2.0
