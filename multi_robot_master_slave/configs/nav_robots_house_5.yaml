@@ -2,6 +2,7 @@ robots:
   - name: tb1
     is_master: false
     name_master: tb3
+    has_max_time: true
     duration_max_time: 0.25
     pose_goal_1:
       x: 4.0
@@ -11,6 +12,7 @@ robots:
   - name: tb2
     is_master: false
     name_master: tb3
+    has_max_time: true
     duration_max_time: 0.4
     pose_goal_1:
       x: 6.5
@@ -23,6 +25,7 @@ robots:
   - name: tb4
     is_master: false
     name_master: tb6
+    has_max_time: true
     duration_max_time: 0.2
     pose_goal_1:
       x: -1.0
@@ -32,6 +35,7 @@ robots:
   - name: tb5
     is_master: false
     name_master: tb6
+    has_max_time: true
     duration_max_time: 0.3
     pose_goal_1:
       x: -4.0
