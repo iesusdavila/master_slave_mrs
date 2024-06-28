@@ -31,6 +31,11 @@ class NavigateSlave(Robot):
                 goal_poses_robot = task_queue[id_first_slave_task]["goal_poses"]
                 self.nav_slave.followWaypoints(goal_poses_robot)
                 nav_start = self.nav_slave.get_clock().now()
+
+                has_max_time = task_queue[id_first_slave_task]["has_max_time"]
+                use_camera = task_queue[id_first_slave_task]["use_camera"]
+                duration_max_time_m = task_queue[id_first_slave_task]["duration_max_time"]
+                current_waypoint = 0
                 
                 is_task_terminated = self.nav_slave.isTaskComplete()
                 is_task_completed = False
@@ -45,11 +50,7 @@ class NavigateSlave(Robot):
 
                         current_waypoint = feedback.current_waypoint
 
-                        has_max_time = task_queue[id_first_slave_task]["has_max_time"]
-                        use_camera = task_queue[id_first_slave_task]["use_camera"]
-
                         if has_max_time:
-                            duration_max_time_m = task_queue[id_first_slave_task]["duration_max_time"]
                             duration_max_time=Duration(seconds=duration_max_time_m*60)
                             max_time = self.nav_slave.getTimeNav(duration_max_time.nanoseconds)
                             
@@ -79,7 +80,9 @@ class NavigateSlave(Robot):
                     self.task_complete(dict_slave, id_first_slave_task)
                 else:
                     self.nav_slave.info("Tarea NO completada")
-
+                    await self.exceed_max_time(task_queue, dict_slave, id_first_slave_task, use_camera, goal_poses_robot, has_max_time, duration_max_time_m, current_waypoint, system_master_slave)
+                    
+                    return
                 break
             elif id_first_slave_task != id_task and name_first_slave_task == self.name_slave_pend:
                 self.nav_slave.info("El esclavo " + self.name_slave_pend + " está esperando que la tarea enviada al esclavo " + name_first_slave_task + " sea completada una vez que dicho esclavo complete su tarea interna. Es el mismo esclavo pero con otro ID de tarea")
