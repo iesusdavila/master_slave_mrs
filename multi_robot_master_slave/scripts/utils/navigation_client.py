@@ -229,6 +229,13 @@ class NavigationRobot(Node):
             rclpy.spin_until_future_complete(self, future)
         return
 
+    def getMissionPoints(self):
+        """Get the missed waypoints from the last task."""
+        if self.result_future.result() == None:
+            return None
+        else:
+            return list(self.result_future.result().result.missed_waypoints)
+
     def isTaskComplete(self):
         """Check if the task request of any type is complete yet."""
         if not self.result_future:

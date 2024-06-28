@@ -31,8 +31,10 @@ class NavigateSlave(Robot):
                 goal_poses_robot = task_queue[id_first_slave_task]["goal_poses"]
                 self.nav_slave.followWaypoints(goal_poses_robot)
                 nav_start = self.nav_slave.get_clock().now()
-
-                while not self.nav_slave.isTaskComplete():
+                
+                is_task_terminated = self.nav_slave.isTaskComplete()
+                is_task_completed = False
+                while not is_task_terminated:
                     
                     await asyncio.sleep(1)
                     feedback = self.nav_slave.getFeedback()
@@ -65,9 +67,18 @@ class NavigateSlave(Robot):
                                 super().generate_message(name_slave, current_waypoint, len(goal_poses_robot), nav_time)
                             else:
                                 super().generate_message(name_slave, current_waypoint, len(goal_poses_robot), nav_time, name_slave=self.name_slave_pend)
-                                     
-                if self.nav_slave.getResult() == TaskResult.SUCCEEDED:
+    
+                        is_task_terminated = self.nav_slave.isTaskComplete()
+                        missing_points = self.nav_slave.getMissionPoints()
+
+                        if missing_points != None:
+                            if len(missing_points) == 0 and is_task_terminated:
+                                is_task_completed = True
+
+                if self.nav_slave.getResult() == TaskResult.SUCCEEDED and is_task_completed:
                     self.task_complete(dict_slave, id_first_slave_task)
+                else:
+                    self.nav_slave.info("Tarea NO completada")
 
                 break
             elif id_first_slave_task != id_task and name_first_slave_task == self.name_slave_pend:
