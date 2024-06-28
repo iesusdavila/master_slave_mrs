@@ -60,6 +60,7 @@ class NavigateSlave(Robot):
                                 super().generate_message(name_slave, current_waypoint, len(goal_poses_robot), nav_time, max_time, self.name_slave_pend)
                             
                             if now - nav_start >= duration_max_time:
+                                self.nav_slave.info("Tarea NO completada en el tiempo establecido.")
                                 await self.exceed_max_time(task_queue, dict_slave, id_first_slave_task, use_camera, goal_poses_robot, has_max_time, duration_max_time_m, current_waypoint, system_master_slave)
 
                                 return
@@ -97,7 +98,6 @@ class NavigateSlave(Robot):
 
         old_robots_execution = task_queue[id_first_slave_task]["old_robots_execution"]
         
-        self.nav_slave.info("Tarea NO completada en el tiempo establecido.")
         dict_slave["task_queue"].pop(id_first_slave_task)
         self.nav_slave.info("Tarea eliminada de la lista de tareas pendientes")
 
