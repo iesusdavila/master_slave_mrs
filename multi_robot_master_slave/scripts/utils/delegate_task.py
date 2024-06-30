@@ -164,7 +164,6 @@ class MasterHandler(AbstractHandler):
 
         self.nav_master.info("---> Verificando si el master está disponible u otro esclavo... <---")
         for slave in list_slaves:
-            print
             if slave not in self.old_robots_execution:
                 if self.use_camera:
                     if list_slaves[slave]["has_camera"]:
