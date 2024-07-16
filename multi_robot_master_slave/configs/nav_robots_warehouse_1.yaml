@@ -1,7 +1,7 @@
 robots:
-  - name: tb1
+  - name: tb1_1
     is_master: false
-    name_master: tb3
+    name_master: tb3_1
     has_camera: true
     has_max_time: false
     duration_max_time: 0.0
@@ -21,9 +21,9 @@ robots:
       y: 0.5
       z: 0.01
       yaw: 3.1416
-  - name: tb2
+  - name: tb2_1
     is_master: false
-    name_master: tb3
+    name_master: tb3_1
     has_camera: false
     has_max_time: false
     duration_max_time: 0.0
@@ -43,7 +43,7 @@ robots:
       y: -1.25
       z: 0.01
       yaw: 3.1416
-  - name: tb3
+  - name: tb3_1
     is_master: true
     has_camera: true
     same_time_task: false
