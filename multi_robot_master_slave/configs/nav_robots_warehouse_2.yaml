@@ -2,10 +2,10 @@ robots:
   - name: tb1
     is_master: false
     name_master: limo1
-    has_camera: true
+    has_camera: false
     has_max_time: false
     duration_max_time: 0.0
-    use_camera: true
+    use_camera: false
     pose_goal_1:
       x: -2.3
       y: -8.5
@@ -26,7 +26,7 @@ robots:
     name_master: limo1
     has_camera: false
     has_max_time: true
-    duration_max_time: 2.6
+    duration_max_time: 1.8
     use_camera: false
     pose_goal_1:
       x: 0.0
@@ -44,8 +44,8 @@ robots:
       z: 0.01
       yaw: 0.0
     pose_goal_4:
-      x: -4.0
-      y: 9.0
+      x: -3.75
+      y: 6.5
       z: 0.01
       yaw: 0.0
   - name: limo1
