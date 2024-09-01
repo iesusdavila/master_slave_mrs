@@ -1,0 +1,39 @@
+robots:
+  - name: waffle_pi1
+    is_master: false
+    name_master: waffle2
+    has_camera: false
+    has_max_time: true
+    duration_max_time: 0.0
+    use_camera: false
+    pose_goal_1:
+      x: 0.0
+      y: 5.2
+      z: 0.01
+      yaw: 3.1416
+    pose_goal_2:
+      x: -0.1
+      y: 2.8
+      z: 0.01
+      yaw: 3.1416
+  - name: waffle1
+    is_master: false
+    name_master: waffle2
+    has_camera: false
+    has_max_time: true
+    duration_max_time: 2.6
+    use_camera: false
+    pose_goal_1:
+      x: 6.0
+      y: 2.2
+      z: 0.01
+      yaw: 3.1416
+    pose_goal_2:
+      x: 1.8
+      y: 9.5
+      z: 0.01
+      yaw: -1.5708
+  - name: waffle2
+    is_master: true
+    has_camera: true
+    same_time_task: false
